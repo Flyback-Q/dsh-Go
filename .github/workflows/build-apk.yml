@@ -86,5 +86,5 @@ jobs:
         run: |
           TAG="v1.1.0-$(date +%Y%m%d%H%M)"
           gh release create "$TAG" app/build/app/outputs/flutter-apk/app-arm64-release.apk \
-            --title "鲸娘 $TAG" \
-            --notes "自定义名称：鲸娘；包名：io.github.flybackq.jingniang；纯白背景桌面图标与通知图标。"
+            --title "鲸鱼娘 $TAG" \
+            --notes "自定义名称：鲸鱼娘；包名：io.github.flybackq.jingniang；纯白背景桌面图标与通知图标；新增纯白主题配色。"
