@@ -21,6 +21,7 @@ import io.github.ccch1mneyyy.dsh_app.i18n.AppStrings
 import io.github.ccch1mneyyy.dsh_app.pet.PetOverlay
 import io.github.ccch1mneyyy.dsh_app.phone.PhoneControl
 import io.github.ccch1mneyyy.dsh_app.runtime.DshService
+import io.github.ccch1mneyyy.dsh_app.runtime.VendorSettings
 import io.github.ccch1mneyyy.dsh_app.theme.ThemeAccent
 
 /**
@@ -200,16 +201,26 @@ object LiveActivity {
         ensureChannel(ctx, nm)
         val color = ThemeAccent.notificationColor(ctx)
         val picture = c.packId?.let { portraitOf(ctx, it, c.mood) }
+        val xiaomiLiveIsland = VendorSettings.vendorOf(Build.MANUFACTURER, Build.BRAND) == VendorSettings.XIAOMI &&
+            !XiaomiFocus.allowed(ctx)
+        val shortStatus = (c.chipWords ?: c.chip)?.take(6) ?: AppStrings.APP_NAME
+        val displayTitle = if (xiaomiLiveIsland) shortStatus else c.title
+        val displayText = if (xiaomiLiveIsland) {
+            listOfNotNull(c.title.takeIf { it.isNotEmpty() && it != shortStatus }, c.text.takeIf { it.isNotEmpty() })
+                .joinToString(" · ")
+        } else {
+            c.text
+        }
         val builder = Notification.Builder(ctx, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_dsh)
             .setColor(color)
-            .setContentTitle(c.title)
-            .setContentText(c.text.ifEmpty { null })
+            .setContentTitle(displayTitle)
+            .setContentText(displayText.ifEmpty { null })
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setCategory(if (c.busy) Notification.CATEGORY_PROGRESS else Notification.CATEGORY_STATUS)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
-            .setPublicVersion(publicVersion(ctx, c, color))
+            .setPublicVersion(publicVersion(ctx, c, color, xiaomiLiveIsland, shortStatus))
             .setContentIntent(openIntent(ctx, c))
             .setTimeoutAfter(if (c.ending) ENDING_TIMEOUT_MS else TIMEOUT_MS)
             .addExtras(Bundle().apply { putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, true) })
@@ -223,14 +234,14 @@ object LiveActivity {
                         .setProgressSegments(listOf(Notification.ProgressStyle.Segment(1).setColor(color)))
                         .setProgressIndeterminate(true)
                 } else {
-                    Notification.BigTextStyle().bigText(c.text)
+                    Notification.BigTextStyle().bigText(displayText)
                 },
             )
             c.chipWords?.let(builder::setShortCriticalText)
         } else if (c.busy) {
             builder.setProgress(0, 0, true)
         } else {
-            builder.setStyle(Notification.BigTextStyle().bigText(c.text))
+            builder.setStyle(Notification.BigTextStyle().bigText(displayText))
         }
         if (c.kind == LiveContent.Kind.PHONE && c.phoneTaskId != null) {
             val stop = PendingIntent.getService(
@@ -245,11 +256,17 @@ object LiveActivity {
     }
 
     /** The lock screen's version when it hides sensitive content: no title, no line. */
-    private fun publicVersion(ctx: Context, c: LiveContent, color: Int): Notification {
+    private fun publicVersion(
+        ctx: Context,
+        c: LiveContent,
+        color: Int,
+        xiaomiLiveIsland: Boolean,
+        shortStatus: String,
+    ): Notification {
         val builder = Notification.Builder(ctx, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_dsh)
             .setColor(color)
-            .setContentTitle(AppStrings.APP_NAME)
+            .setContentTitle(if (xiaomiLiveIsland) shortStatus else AppStrings.APP_NAME)
             .setContentText(c.publicText)
             .setOngoing(true)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) c.chipWords?.let(builder::setShortCriticalText)
