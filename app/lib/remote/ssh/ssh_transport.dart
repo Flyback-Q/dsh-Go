@@ -128,6 +128,18 @@ class DartSshTransport implements SshTransport, RemoteBootstrapShell {
         '${params.host}: ${e.message}',
         retryable: true,
       );
+    } on HandshakeException catch (e) {
+      throw HostLinkError(
+        HostLinkErrorKind.unreachable,
+        '${params.host}: ${e.message}',
+        retryable: true,
+      );
+    } on HttpException catch (e) {
+      throw HostLinkError(
+        HostLinkErrorKind.unreachable,
+        '${params.host}: ${e.message}',
+        retryable: true,
+      );
     } on TimeoutException {
       throw HostLinkError(
         HostLinkErrorKind.unreachable,
@@ -549,9 +561,18 @@ class _WebSocketSshSocket implements SSHSocket {
         sink = _WebSocketByteSink(_ws);
 
   static Future<_WebSocketSshSocket> connect(String url, {required Duration timeout}) async {
-    final ws = await WebSocket.connect(url).timeout(timeout);
-    ws.pingInterval = const Duration(seconds: 20);
-    return _WebSocketSshSocket._(ws);
+    final client = HttpClient()..connectionTimeout = timeout;
+    try {
+      final ws = await WebSocket.connect(
+        url,
+        compression: CompressionOptions.compressionOff,
+        customClient: client,
+      ).timeout(timeout);
+      ws.pingInterval = const Duration(seconds: 20);
+      return _WebSocketSshSocket._(ws);
+    } finally {
+      client.close(force: false);
+    }
   }
 
   final WebSocket _ws;
