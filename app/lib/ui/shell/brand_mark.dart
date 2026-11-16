@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 
 import '../../state/app_info.dart';
 import '../theme/theme.dart';
-import 'brand_glyph.g.dart';
 
 /// The dsh-go mark: a fish tail with its bubble.
 ///
@@ -31,85 +30,46 @@ class BrandMark extends StatelessWidget {
   final bool tile;
 
   /// Width / height of the glyph.
-  static const aspect = BrandGlyph.aspect;
+  static const aspect = 1.0;
 
-  /// The glyph's visual centre, the area centroid of its ink, as fractions of its
-  /// width and height from the top left. A little below the box's centre: the body
-  /// carries the weight.
-  static final visualCentre = Offset(
-    (BrandGlyph.centroid.dx - BrandGlyph.box.left) / BrandGlyph.box.width,
-    (BrandGlyph.centroid.dy - BrandGlyph.box.top) / BrandGlyph.box.height,
-  );
+  /// The glyph's visual centre, as fractions of its width and height.
+  static const visualCentre = Offset(0.5, 0.5);
 
-  /// How far to move a glyph of height [size] so its visual centre, not its box,
-  /// sits on the centre of the space it is centred in.
-  static Offset opticalShift(double size) =>
-      Offset((0.5 - visualCentre.dx) * size * aspect, (0.5 - visualCentre.dy) * size);
+  /// How far to move a glyph of height [size] so its visual centre sits on the
+  /// centre of the space it is centred in.
+  static Offset opticalShift(double size) => Offset.zero;
 
   @override
   Widget build(BuildContext context) {
-    final style = tile
-        ? _Style.tile
-        : color != null
-        ? _Style.mono
-        : Theme.of(context).brightness == Brightness.dark
-        ? _Style.dark
-        : _Style.light;
+    final Widget image = Image.asset(
+      'assets/brand/mascot.png',
+      width: tile ? size * 0.72 : size,
+      height: tile ? size * 0.72 : size,
+      filterQuality: FilterQuality.none,
+      color: tile ? null : color,
+      colorBlendMode: !tile && color != null ? BlendMode.srcIn : null,
+    );
     return Semantics(
       label: AppInfo.wordmark,
       image: true,
-      child: CustomPaint(
-        size: tile ? Size.square(size) : Size(size * aspect, size),
-        painter: _BrandPainter(style, color),
-      ),
+      child: tile
+          ? Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(size * 0.22),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF9AB0E8), Color(0xFF405AAD)],
+                ),
+              ),
+              alignment: Alignment.center,
+              child: image,
+            )
+          : image,
     );
   }
-}
-
-enum _Style { light, dark, mono, tile }
-
-class _BrandPainter extends CustomPainter {
-  const _BrandPainter(this.style, this.color);
-
-  final _Style style;
-  final Color? color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.save();
-    if (style == _Style.tile) {
-      const box = BrandGlyph.tileBox;
-      canvas.scale(size.width / box.width, size.height / box.height);
-      canvas.translate(-box.left, -box.top);
-      canvas.drawPath(BrandGlyph.tile, Paint()..shader = BrandGlyph.tileFill);
-      _glass(canvas, dark: true);
-    } else {
-      const box = BrandGlyph.box;
-      canvas.scale(size.height / box.height);
-      canvas.translate(-box.left, -box.top);
-      if (style == _Style.mono) {
-        final paint = Paint()..color = color!;
-        canvas.drawPath(BrandGlyph.body, paint);
-        canvas.drawPath(BrandGlyph.bubble, paint);
-      } else {
-        _glass(canvas, dark: style == _Style.dark);
-      }
-    }
-    canvas.restore();
-  }
-
-  /// The colour glyph: the tail's gradient over the whole silhouette, the fin (behind
-  /// the stem) and the belly (in front of it) over that, then the bubble.
-  static void _glass(Canvas canvas, {required bool dark}) {
-    canvas
-      ..drawPath(BrandGlyph.body, Paint()..shader = dark ? BrandGlyph.tailDark : BrandGlyph.tailLight)
-      ..drawPath(BrandGlyph.fin, Paint()..shader = dark ? BrandGlyph.finDark : BrandGlyph.finLight)
-      ..drawPath(BrandGlyph.belly, Paint()..shader = dark ? BrandGlyph.bellyDark : BrandGlyph.bellyLight)
-      ..drawPath(BrandGlyph.bubble, Paint()..shader = dark ? BrandGlyph.bubbleDark : BrandGlyph.bubbleLight);
-  }
-
-  @override
-  bool shouldRepaint(_BrandPainter old) => old.style != style || old.color != color;
 }
 
 /// The glyph and a wordmark on one line.

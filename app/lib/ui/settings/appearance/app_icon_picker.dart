@@ -12,7 +12,6 @@ import '../../../l10n/l10n.dart';
 import '../../../state/android_features.dart';
 import '../../../state/app_icon_state.dart';
 import '../../common/pressable.dart';
-import '../../shell/brand_glyph.g.dart';
 import '../../theme/theme.dart';
 import '../../common/brief_notice.dart';
 
@@ -238,9 +237,23 @@ class AppIconPreview extends StatelessWidget {
   final List<double>? mask;
 
   @override
-  Widget build(BuildContext context) => CustomPaint(
-    size: Size.square(size),
-    painter: _IconPainter(icon, mask, Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08)),
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: size,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        CustomPaint(
+          size: Size.square(size),
+          painter: _IconPainter(icon, mask, Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08)),
+        ),
+        Image.asset(
+          'assets/brand/mascot.png',
+          width: size * 0.72,
+          height: size * 0.72,
+          filterQuality: FilterQuality.none,
+        ),
+      ],
+    ),
   );
 }
 
@@ -265,22 +278,7 @@ class _IconPainter extends CustomPainter {
       ..drawRect(
         const Rect.fromLTWH(0, 0, 108, 108),
         Paint()..shader = ui.Gradient.linear(AppIconArt.start, AppIconArt.end, [art.from, art.to]),
-      );
-    switch (art.glyph) {
-      case AppIconGlyph.mono:
-        final paint = Paint()..color = art.mono!;
-        canvas
-          ..drawPath(BrandGlyph.body, paint)
-          ..drawPath(BrandGlyph.bubble, paint);
-      case AppIconGlyph.glassDark || AppIconGlyph.glassLight:
-        final dark = art.glyph == AppIconGlyph.glassDark;
-        canvas
-          ..drawPath(BrandGlyph.body, Paint()..shader = dark ? BrandGlyph.tailDark : BrandGlyph.tailLight)
-          ..drawPath(BrandGlyph.fin, Paint()..shader = dark ? BrandGlyph.finDark : BrandGlyph.finLight)
-          ..drawPath(BrandGlyph.belly, Paint()..shader = dark ? BrandGlyph.bellyDark : BrandGlyph.bellyLight)
-          ..drawPath(BrandGlyph.bubble, Paint()..shader = dark ? BrandGlyph.bubbleDark : BrandGlyph.bubbleLight);
-    }
-    canvas
+      )
       ..restore()
       // Half of it falls outside the clip: a 1 px line just inside the edge.
       ..drawPath(
