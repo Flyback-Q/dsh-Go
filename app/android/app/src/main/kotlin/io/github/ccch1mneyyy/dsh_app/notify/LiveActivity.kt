@@ -21,7 +21,6 @@ import io.github.ccch1mneyyy.dsh_app.i18n.AppStrings
 import io.github.ccch1mneyyy.dsh_app.pet.PetOverlay
 import io.github.ccch1mneyyy.dsh_app.phone.PhoneControl
 import io.github.ccch1mneyyy.dsh_app.runtime.DshService
-import io.github.ccch1mneyyy.dsh_app.runtime.VendorSettings
 import io.github.ccch1mneyyy.dsh_app.theme.ThemeAccent
 
 /**
@@ -201,16 +200,12 @@ object LiveActivity {
         ensureChannel(ctx, nm)
         val color = ThemeAccent.notificationColor(ctx)
         val picture = c.packId?.let { portraitOf(ctx, it, c.mood) }
-        val xiaomiLiveIsland = VendorSettings.vendorOf(Build.MANUFACTURER, Build.BRAND) == VendorSettings.XIAOMI &&
-            !XiaomiFocus.allowed(ctx)
         val shortStatus = (c.chipWords ?: c.chip)?.take(6) ?: AppStrings.APP_NAME
-        val displayTitle = if (xiaomiLiveIsland) shortStatus else c.title
-        val displayText = if (xiaomiLiveIsland) {
-            listOfNotNull(c.title.takeIf { it.isNotEmpty() && it != shortStatus }, c.text.takeIf { it.isNotEmpty() })
-                .joinToString(" · ")
-        } else {
-            c.text
-        }
+        val displayTitle = shortStatus
+        val displayText = listOfNotNull(
+            c.title.takeIf { it.isNotEmpty() && it != shortStatus },
+            c.text.takeIf { it.isNotEmpty() },
+        ).joinToString(" · ")
         val builder = Notification.Builder(ctx, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_dsh)
             .setColor(color)
@@ -220,7 +215,7 @@ object LiveActivity {
             .setOnlyAlertOnce(true)
             .setCategory(if (c.busy) Notification.CATEGORY_PROGRESS else Notification.CATEGORY_STATUS)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
-            .setPublicVersion(publicVersion(ctx, c, color, xiaomiLiveIsland, shortStatus))
+            .setPublicVersion(publicVersion(ctx, c, color, shortStatus))
             .setContentIntent(openIntent(ctx, c))
             .setTimeoutAfter(if (c.ending) ENDING_TIMEOUT_MS else TIMEOUT_MS)
             .addExtras(Bundle().apply { putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, true) })
@@ -260,13 +255,12 @@ object LiveActivity {
         ctx: Context,
         c: LiveContent,
         color: Int,
-        xiaomiLiveIsland: Boolean,
         shortStatus: String,
     ): Notification {
         val builder = Notification.Builder(ctx, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_dsh)
             .setColor(color)
-            .setContentTitle(if (xiaomiLiveIsland) shortStatus else AppStrings.APP_NAME)
+            .setContentTitle(shortStatus)
             .setContentText(c.publicText)
             .setOngoing(true)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) c.chipWords?.let(builder::setShortCriticalText)
