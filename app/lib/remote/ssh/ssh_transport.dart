@@ -115,9 +115,19 @@ class DartSshTransport implements SshTransport, RemoteBootstrapShell {
 
     final SSHSocket socket;
     try {
-      socket = await SSHSocket.connect(params.host, params.port, timeout: params.connectTimeout);
+      if (_isWebSocketHost(params.host)) {
+        socket = await _WebSocketSshSocket.connect(params.host, timeout: params.connectTimeout);
+      } else {
+        socket = await SSHSocket.connect(params.host, params.port, timeout: params.connectTimeout);
+      }
     } on SocketException catch (e) {
       throw describeSocketError(e, params);
+    } on WebSocketException catch (e) {
+      throw HostLinkError(
+        HostLinkErrorKind.unreachable,
+        '${params.host}: ${e.message}',
+        retryable: true,
+      );
     } on TimeoutException {
       throw HostLinkError(
         HostLinkErrorKind.unreachable,
@@ -524,4 +534,71 @@ String _bootstrapDiagnostic(String text) {
   final redacted = redactDiagnostics(redactRemoteTokens(text)).trim();
   const limit = 4096;
   return redacted.length <= limit ? redacted : '…\n${redacted.substring(redacted.length - limit)}';
+}
+
+bool _isWebSocketHost(String host) {
+  final lower = host.trim().toLowerCase();
+  return lower.startsWith('wss://') || lower.startsWith('ws://');
+}
+
+/// Adapts a `dart:io` [WebSocket] (e.g. Cloudflare Tunnel `wss://ssh.example.com`)
+/// into a `dartssh2` [SSHSocket] so SSH traffic runs over WebSocket without a local proxy binary.
+class _WebSocketSshSocket implements SSHSocket {
+  _WebSocketSshSocket._(this._ws)
+      : stream = _ws.map((event) => event is Uint8List ? event : Uint8List.fromList(event as List<int>)),
+        sink = _WebSocketByteSink(_ws);
+
+  static Future<_WebSocketSshSocket> connect(String url, {required Duration timeout}) async {
+    final ws = await WebSocket.connect(url).timeout(timeout);
+    ws.pingInterval = const Duration(seconds: 20);
+    return _WebSocketSshSocket._(ws);
+  }
+
+  final WebSocket _ws;
+
+  @override
+  final Stream<Uint8List> stream;
+
+  @override
+  final StreamSink<List<int>> sink;
+
+  @override
+  Future<void> get done => _ws.done;
+
+  @override
+  Future<void> close() => _ws.close();
+
+  @override
+  void destroy() {
+    unawaited(_ws.close());
+  }
+}
+
+class _WebSocketByteSink implements StreamSink<List<int>> {
+  _WebSocketByteSink(this._ws);
+
+  final WebSocket _ws;
+
+  @override
+  void add(List<int> event) {
+    if (_ws.readyState == WebSocket.open) {
+      _ws.add(event is Uint8List ? event : Uint8List.fromList(event));
+    }
+  }
+
+  @override
+  void addError(Object error, [StackTrace? stackTrace]) {}
+
+  @override
+  Future<void> addStream(Stream<List<int>> stream) async {
+    await for (final chunk in stream) {
+      add(chunk);
+    }
+  }
+
+  @override
+  Future<void> close() => _ws.close();
+
+  @override
+  Future<void> get done => _ws.done;
 }
