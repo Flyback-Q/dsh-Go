@@ -353,65 +353,7 @@ class NeutralTones {
 
   static final _cache = <(double, double), NeutralTones>{};
 
-  static NeutralTones forAccent(AppAccent accent) {
-    if (accent.id == 'pure_white') {
-      final base = of(tintHue: 0, tintChroma: 0);
-      return NeutralTones(
-        mistTop: const Color(0xFFFFFFFF),
-        mistBottom: const Color(0xFFFFFFFF),
-        mist: const Color(0xFFFFFFFF),
-        mistLowest: const Color(0xFFFFFFFF),
-        mistLow: const Color(0xFFFAFAFA),
-        mistContainer: const Color(0xFFF5F5F5),
-        mistHigh: const Color(0xFFEEEEEE),
-        mistHighest: const Color(0xFFE5E5E5),
-        ink: base.ink,
-        inkMuted: base.inkMuted,
-        inkFaint: base.inkFaint,
-        inkGhost: base.inkGhost,
-        outlineLight: base.outlineLight,
-        ruleLight: const Color(0xFFE6E6E6),
-        shadowInk: base.shadowInk,
-        slate: base.slate,
-        slateContainer: const Color(0xFFF0F0F0),
-        inverseSurface: base.inverseSurface,
-        onInverseSurface: base.onInverseSurface,
-        scrim: base.scrim,
-        codeWell: const Color(0xFFFAFAFA),
-        codeWellHeader: const Color(0xFFF2F2F2),
-        codeWellBorder: const Color(0xFFE6E6E6),
-        lineNumber: base.lineNumber,
-        comment: base.comment,
-        nightTop: base.nightTop,
-        nightBottom: base.nightBottom,
-        night: base.night,
-        nightLowest: base.nightLowest,
-        nightLow: base.nightLow,
-        nightContainer: base.nightContainer,
-        nightHigh: base.nightHigh,
-        nightHighest: base.nightHighest,
-        paper: base.paper,
-        paperMuted: base.paperMuted,
-        paperFaint: base.paperFaint,
-        paperGhost: base.paperGhost,
-        outlineDark: base.outlineDark,
-        ruleDark: base.ruleDark,
-        shadowNight: base.shadowNight,
-        slateLift: base.slateLift,
-        onSlateLift: base.onSlateLift,
-        smoke: base.smoke,
-        sheetDark: base.sheetDark,
-        codeWellDark: base.codeWellDark,
-        codeWellHeaderDark: base.codeWellHeaderDark,
-        codeWellBorderDark: base.codeWellBorderDark,
-        lineNumberDark: base.lineNumberDark,
-        commentDark: base.commentDark,
-        terminal: base.terminal,
-        terminalKey: base.terminalKey,
-      );
-    }
-    return of(tintHue: accent.tintHue, tintChroma: accent.tintChroma);
-  }
+  static NeutralTones forAccent(AppAccent accent) => of(tintHue: accent.tintHue, tintChroma: accent.tintChroma);
 
   /// 当前主题那套配色的中性色。
   static NeutralTones current(BuildContext context) =>

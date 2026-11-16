@@ -69,6 +69,19 @@ jobs:
             echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/28.2.13676358"
           } >> "$GITHUB_ENV"
 
+      - name: Configure persistent release signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.p12"
+          cat > app/android/key.properties <<EOF
+          storeFile=$RUNNER_TEMP/release.p12
+          storePassword=$KEYSTORE_PASS
+          keyAlias=jingniang
+          keyPassword=$KEYSTORE_PASS
+          EOF
+
       - name: Build arm64 release APK
         run: DSH_BETA_TOKEN_FILE= bash tooling/build-apk.sh -f arm64 --keep-daemon
 
@@ -87,4 +100,4 @@ jobs:
           TAG="v1.1.0-$(date +%Y%m%d%H%M)"
           gh release create "$TAG" app/build/app/outputs/flutter-apk/app-arm64-release.apk \
             --title "鲸鱼娘 $TAG" \
-            --notes "自定义名称：鲸鱼娘；包名：io.github.flybackq.jingniang；纯白背景桌面图标与通知图标；新增纯白主题配色。"
+            --notes "自定义名称：鲸鱼娘；包名：io.github.flybackq.jingniang；固定签名密钥（支持后续版本直接覆盖安装）；纯白背景桌面图标（吉祥物比例+5%）与通知图标。"

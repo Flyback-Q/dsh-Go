@@ -74,7 +74,6 @@ class AppAccent {
         'turquoise' => appL10n.phoneAccentTurquoise,
         'amber' => appL10n.phoneAccentAmber,
         'graphite' => appL10n.phoneAccentGraphite,
-        'pure_white' => '纯白',
         _ => appL10n.phoneAccentCustom,
       };
 
@@ -258,30 +257,8 @@ class AppAccent {
     hazeDark: Color(0xFF4A4D52),
   );
 
-  /// 纯白:纯白底色与零彩度中性灰，简洁干净。
-  static const pureWhite = AppAccent(
-    id: 'pure_white',
-    seed: Color(0xFF1F2329),
-    pressed: Color(0xFF111317),
-    container: Color(0xFFF3F4F6),
-    onContainer: Color(0xFF1F2329),
-    bubble: Color(0xFFF2F3F5),
-    glow: Color(0xFFFFFFFF),
-    seedDark: Color(0xFFECEEF2),
-    pressedDark: Color(0xFFD5D8DF),
-    onSeedDark: Color(0xFF181A1E),
-    containerDark: Color(0xFF35373C),
-    onContainerDark: Color(0xFFE8EAEE),
-    bubbleDark: Color(0xFF2C2E33),
-    glowDark: Color(0xFF555860),
-    tintHue: 0,
-    tintChroma: 0,
-    haze: Color(0xFFFFFFFF),
-    hazeDark: Color(0xFF2E3035),
-  );
-
   /// 设置页里的顺序。
-  static const presets = [mist, daiqing, dusk, turquoise, amber, graphite, pureWhite];
+  static const presets = [mist, daiqing, dusk, turquoise, amber, graphite];
 
   static const customId = 'custom';
   static const wallpaperId = 'wallpaper';
