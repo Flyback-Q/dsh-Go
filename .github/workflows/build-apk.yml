@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FLUTTER_VERSION: 3.47.7
@@ -79,3 +79,12 @@ jobs:
           path: app/build/app/outputs/flutter-apk/app-arm64-release.apk
           retention-days: 14
           if-no-files-found: error
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.1.0-$(date +%Y%m%d%H%M)"
+          gh release create "$TAG" app/build/app/outputs/flutter-apk/app-arm64-release.apk \
+            --title "鲸娘 $TAG" \
+            --notes "自定义名称：鲸娘；包名：io.github.flybackq.jingniang；纯白背景桌面图标与通知图标。"

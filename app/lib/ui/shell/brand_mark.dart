@@ -58,11 +58,7 @@ class BrandMark extends StatelessWidget {
               height: size,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(size * 0.22),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF9AB0E8), Color(0xFF405AAD)],
-                ),
+                color: Colors.white,
               ),
               alignment: Alignment.center,
               child: image,
