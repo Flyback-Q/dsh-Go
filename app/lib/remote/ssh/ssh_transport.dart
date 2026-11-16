@@ -566,6 +566,9 @@ class _WebSocketSshSocket implements SSHSocket {
   Future<void> get done => _ws.done;
 
   @override
+  Future<void> flush() async {}
+
+  @override
   Future<void> close() => _ws.close();
 
   @override
