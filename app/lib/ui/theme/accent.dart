@@ -74,6 +74,7 @@ class AppAccent {
         'turquoise' => appL10n.phoneAccentTurquoise,
         'amber' => appL10n.phoneAccentAmber,
         'graphite' => appL10n.phoneAccentGraphite,
+        'pure_white' => '纯白',
         _ => appL10n.phoneAccentCustom,
       };
 
@@ -260,7 +261,6 @@ class AppAccent {
   /// 纯白:纯白底色与零彩度中性灰，简洁干净。
   static const pureWhite = AppAccent(
     id: 'pure_white',
-    _label: '纯白',
     seed: Color(0xFF1F2329),
     pressed: Color(0xFF111317),
     container: Color(0xFFF3F4F6),
