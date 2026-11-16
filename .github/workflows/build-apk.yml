@@ -60,6 +60,11 @@ jobs:
           flutter pub get --enforce-lockfile
           printf 'sdk.dir=%s\nflutter.sdk=%s\n' "$ANDROID_HOME" "$FLUTTER_ROOT" > android/local.properties
 
+      - name: Install Android NDK 28.2.13676358
+        run: |
+          SDKM=$(command -v sdkmanager || find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n1)
+          yes | "$SDKM" "ndk;28.2.13676358" > /dev/null
+
       - name: Build arm64 release APK
         run: DSH_BETA_TOKEN_FILE= bash tooling/build-apk.sh -f arm64 --keep-daemon
 
