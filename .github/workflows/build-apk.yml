@@ -1,10 +1,9 @@
 name: Build Custom APK
 
 on:
+  # 只保留手动触发。fork 仓库的 schedule 会被 GitHub 静默跳过，且高频自动构建会拉高账号风控。
+  # 自动同步改由外部 cron 调 workflow_dispatch 完成（带 sha 去重 + 6h 最小间隔）。
   workflow_dispatch:
-  schedule:
-    # Check upstream ccch1mneyyy/dsh-Go every 6 hours (UTC+8: 02:00, 08:00, 14:00, 20:00)
-    - cron: '0 0,6,12,18 * * *'
 
 permissions:
   contents: write
@@ -139,6 +138,9 @@ jobs:
           if-no-files-found: error
 
       - name: Create GitHub Release
+        # 仅手动触发时发布 Release；其余运行只留 14 天 artifact，
+        # 避免 231 MB 资产反复堆积占仓库配额、触发平台体积风控。
+        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
