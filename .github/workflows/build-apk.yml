@@ -29,31 +29,31 @@ jobs:
       - name: Check and merge upstream
         id: check
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual trigger: proceeding to build."
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
           git remote add upstream https://github.com/ccch1mneyyy/dsh-Go.git
           git fetch upstream main
           NEW_COMMITS=$(git rev-list --count HEAD..upstream/main)
           echo "Upstream ahead by $NEW_COMMITS commit(s)."
 
-          if [ "$NEW_COMMITS" -eq 0 ]; then
-            echo "Already up to date with upstream. Skipping build."
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          if [ "$NEW_COMMITS" -gt 0 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git merge upstream/main -X ours --no-commit --no-ff
+            # Keep our .github/workflows intact so GITHUB_TOKEN can push without workflow scope
+            git checkout HEAD -- .github
+            git commit -m "chore: merge upstream ccch1mneyyy/dsh-Go/main"
+            git push origin main
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git merge upstream/main -X ours --no-commit --no-ff
-          # Keep our .github/workflows intact so GITHUB_TOKEN can push without workflow scope
-          git checkout HEAD -- .github
-          git commit -m "chore: merge upstream ccch1mneyyy/dsh-Go/main"
-          git push origin main
-          echo "should_build=true" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger: already up to date, proceeding to build."
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Already up to date with upstream. Skipping build."
+          echo "should_build=false" >> "$GITHUB_OUTPUT"
 
   build-apk:
     needs: sync-upstream
@@ -142,7 +142,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v1.1.0-$(date +%Y%m%d%H%M)"
+          VER=$(sed -n 's/^version:[[:space:]]*\([^+[:space:]]*\).*/\1/p' app/pubspec.yaml)
+          TAG="v${VER:-1.2.0}-$(date +%Y%m%d%H%M)"
           gh release create "$TAG" app/build/app/outputs/flutter-apk/app-arm64-release.apk \
             --title "鲸鱼娘 $TAG" \
-            --notes "自定义名称：鲸鱼娘；包名：io.github.flybackq.jingniang；固定签名密钥（支持后续版本直接覆盖安装）；纯白背景桌面图标（吉祥物比例+5%）与通知图标。"
+            --notes "自定义名称：鲸鱼娘；包名：io.github.flybackq.jingniang；固定签名密钥；支持 wss:// Cloudflare Tunnel；澎湃超级岛短状态；已同步上游 $VER。"
