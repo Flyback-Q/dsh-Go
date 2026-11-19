@@ -20,6 +20,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       should_build: ${{ steps.check.outputs.should_build }}
+      upstream_sha: ${{ steps.check.outputs.upstream_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -30,6 +31,7 @@ jobs:
         run: |
           git remote add upstream https://github.com/ccch1mneyyy/dsh-Go.git
           git fetch upstream main
+          echo "upstream_sha=$(git rev-parse upstream/main)" >> "$GITHUB_OUTPUT"
           NEW_COMMITS=$(git rev-list --count HEAD..upstream/main)
           echo "Upstream ahead by $NEW_COMMITS commit(s)."
 
@@ -140,12 +142,65 @@ jobs:
       - name: Create GitHub Release
         # 仅手动触发时发布 Release；其余运行只留 14 天 artifact，
         # 避免 231 MB 资产反复堆积占仓库配额、触发平台体积风控。
+        # 说明由本次构建现场生成：版本、提交、上游 sha、APK 大小与哈希，
+        # 以及自上一版以来的提交标题，不再是一句固定文案。
         if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA_FULL: ${{ github.sha }}
+          UPSTREAM_SHA: ${{ needs.sync-upstream.outputs.upstream_sha }}
         run: |
+          set -e
           VER=$(sed -n 's/^version:[[:space:]]*\([^+[:space:]]*\).*/\1/p' app/pubspec.yaml)
           TAG="v${VER:-1.2.0}-$(date +%Y%m%d%H%M)"
-          gh release create "$TAG" app/build/app/outputs/flutter-apk/app-arm64-release.apk \
+          APK=app/build/app/outputs/flutter-apk/app-arm64-release.apk
+          SIZE=$(stat -c%s "$APK")
+          HASH=$(sha256sum "$APK" | cut -d' ' -f1)
+          SHORT=$(git rev-parse --short HEAD)
+          SUBJECT=$(git log -1 --pretty=%s)
+
+          # 上一个 Release 就是上一次的基线（此时新的还没建）
+          PREV=$(gh release list --repo "$REPO" --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
+          CHANGES=""
+          if [ -n "$PREV" ]; then
+            CHANGES=$(gh api "repos/$REPO/compare/${PREV}...${SHA_FULL}" \
+              --jq '.commits[:25][] | "- " + (.commit.message | split("\n")[0])' 2>/dev/null || true)
+          fi
+          if [ -z "$CHANGES" ]; then
+            CHANGES="- 与上一版没有可比较的提交（同一次构建重发）"
+          fi
+
+          UPS="${UPSTREAM_SHA:0:8}"
+          if [ -z "$UPS" ]; then UPS="未记录"; fi
+
+          {
+            echo "**本次构建**"
+            echo ""
+            echo "| 项 | 值 |"
+            echo "| --- | --- |"
+            echo "| 版本 | \`${VER:-1.2.0}\` |"
+            echo "| 提交 | \`$SHORT\` $SUBJECT |"
+            echo "| 上游 ccch1mneyyy/dsh-Go | \`$UPS\` |"
+            echo "| APK | $SIZE 字节 · arm64-v8a |"
+            echo "| SHA-256 | \`$HASH\` |"
+            echo ""
+            echo "**自上一版 ${PREV:-（无）} 以来的改动**"
+            echo ""
+            echo "$CHANGES"
+            echo ""
+            echo "**固定定制项**"
+            echo ""
+            echo "- 应用名 鲸鱼娘；包名 \`io.github.flybackq.jingniang\`"
+            echo "- 签名：jingniang 固定密钥，可直接覆盖安装"
+            echo "- 图标：纯白底桌面图标（吉祥物比例 +5%）与透明白剪影通知图标"
+            echo "- 澎湃超级岛：强制简短状态，不依赖 XiaomiFocus 权限"
+            echo "- 远程：支持 \`wss://\` WebSocket SSH（Cloudflare Tunnel）"
+            echo "- 插件页：在线导入（npm / Git / tarball）与文件导入（.tgz / .dshgo）"
+          } > "$RUNNER_TEMP/notes.md"
+
+          cat "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" "$APK" \
+            --repo "$REPO" \
             --title "鲸鱼娘 $TAG" \
-            --notes "自定义名称：鲸鱼娘；包名：io.github.flybackq.jingniang；固定签名密钥；支持 wss:// Cloudflare Tunnel；澎湃超级岛短状态；已同步上游 $VER。"
+            --notes-file "$RUNNER_TEMP/notes.md"
