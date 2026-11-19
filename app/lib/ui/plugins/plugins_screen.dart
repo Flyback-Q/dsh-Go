@@ -14,6 +14,7 @@ import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import 'installed_tab.dart';
 import 'market_tab.dart';
+import 'plugin_import.dart';
 
 enum PluginsTab { installed, market }
 
@@ -97,6 +98,11 @@ class _PluginsScreenState extends ConsumerState<PluginsScreen> {
       subtitle: Text(_subtitle(host)),
       actions: [
         const AskAiButton(AskAiTopic.plugins),
+        GlassIconButton(
+          icon: Icons.add_circle_outline,
+          tooltip: '导入插件',
+          onPressed: host == null || !host.canInstall ? null : () => unawaited(showPluginImportSheet(context)),
+        ),
         GlassIconButton(
           icon: AppIcons.refresh,
           tooltip: l10n.pluginsRefresh,
