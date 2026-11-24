@@ -28,14 +28,23 @@ sealed class LauncherEntry {
     final host = raw['host'];
     final text = raw['text'] is String ? raw['text'] as String : '';
     final path = raw['path'];
+    final taskId = raw['taskId'];
+    final taskRev = raw['taskRev'];
     return switch (raw['kind']) {
       'new' => NewChatEntry(text: text),
       'voice' => NewChatEntry(voice: true, text: text),
+      'companion_assistant' => CompanionAssistantEntry(
+        page: raw['page'] is String ? raw['page'] as String : null,
+        returnToApp: raw['returnToApp'] == true,
+      ),
       'screenshot' when path is String && path.startsWith('/') && !path.contains('\u0000') => ScreenshotEntry(path),
       'chat' when sessionId is String && sessionId.isNotEmpty => OpenChatEntry(
         HostRef.decode(host is String ? host : null),
         sessionId,
       ),
+      'companion_task'
+          when taskId is String && taskId.isNotEmpty && !taskId.contains('\u0000') && taskRev is int && taskRev > 0 =>
+        OpenCompanionTaskEntry(taskId, taskRev),
       _ => null,
     };
   }
@@ -48,6 +57,14 @@ class NewChatEntry extends LauncherEntry {
   final String text;
 
   final bool voice;
+}
+
+/// The Android digital assistant opened the room, optionally with a system Assist snapshot.
+class CompanionAssistantEntry extends LauncherEntry {
+  const CompanionAssistantEntry({this.page, this.returnToApp = false});
+
+  final String? page;
+  final bool returnToApp;
 }
 
 /// A pet screenshot in the app's private cache, authenticated by the native
@@ -64,6 +81,15 @@ class OpenChatEntry extends LauncherEntry {
 
   final HostRef host;
   final String sessionId;
+}
+
+/// A trusted reminder notification opens its stored task, without choosing a
+/// host or claiming that the current revision is the one that fired.
+class OpenCompanionTaskEntry extends LauncherEntry {
+  const OpenCompanionTaskEntry(this.taskId, this.taskRev);
+
+  final String taskId;
+  final int taskRev;
 }
 
 /// A conversation as a launcher shortcut.

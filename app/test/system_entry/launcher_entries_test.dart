@@ -66,6 +66,36 @@ void main() {
       expect((entry as ScreenshotEntry).path, '/cache/pet-screenshots/slot/screen.png');
     });
 
+    test('the system assistant opens the room even when Android shares no page', () {
+      final plain = LauncherEntry.parse({'kind': 'companion_assistant', 'page': null}) as CompanionAssistantEntry;
+      expect(plain.page, isNull);
+      expect(plain.returnToApp, isFalse);
+      final entry = LauncherEntry.parse({
+        'kind': 'companion_assistant',
+        'page': 'Train arrives at 9:30',
+        'returnToApp': true,
+      }) as CompanionAssistantEntry;
+      expect(entry.page, 'Train arrives at 9:30');
+      expect(entry.returnToApp, isTrue);
+    });
+
+    test('a reminder notification retains its task and the revision that was opened', () {
+      final entry = LauncherEntry.parse({'kind': 'companion_task', 'taskId': 'task-one', 'taskRev': 2});
+      expect(entry, isA<OpenCompanionTaskEntry>());
+      entry as OpenCompanionTaskEntry;
+      expect(entry.taskId, 'task-one');
+      expect(entry.taskRev, 2);
+      for (final invalid in [
+        {'taskId': '', 'taskRev': 1},
+        {'taskId': 'bad\u0000id', 'taskRev': 1},
+        {'taskId': 'task-one', 'taskRev': 0},
+        {'taskId': 'task-one', 'taskRev': '2'},
+        {'taskId': 'task-one'},
+      ]) {
+        expect(LauncherEntry.parse({'kind': 'companion_task', ...invalid}), isNull);
+      }
+    });
+
     test('malformed screenshot entries are dropped', () {
       for (final path in [null, 42, '', 'screen.png', 'content://screen', '/cache/bad\u0000.png']) {
         expect(LauncherEntry.parse({'kind': 'screenshot', 'path': path}), isNull);
