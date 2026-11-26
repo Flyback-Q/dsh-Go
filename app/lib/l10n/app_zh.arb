@@ -12242,6 +12242,8 @@
   "speechCloudNotSetUp": "还没设置云端识别服务",
   "speechCallTile": "语音通话",
   "speechCallSection": "语音通话",
+  "speechCallEnabled": "显示语音通话",
+  "speechCallEnabledHint": "关闭后，主界面顶栏与「+」菜单不再显示语音通话入口",
   "speechCallFooter": "通话时说完一句停一下，就会发出去；回答边写边读。",
   "speechCallBargeIn": "插话打断",
   "speechCallBargeInHint": "AI 说话时你一开口，它先轻下来；「嗯」「对」它接着说，说别的它就停下听你",

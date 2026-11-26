@@ -20515,6 +20515,12 @@ class L10nZh extends L10n {
   String get speechCallSection => '语音通话';
 
   @override
+  String get speechCallEnabled => '显示语音通话';
+
+  @override
+  String get speechCallEnabledHint => '关闭后，主界面顶栏与「+」菜单不再显示语音通话入口';
+
+  @override
   String get speechCallFooter => '通话时说完一句停一下，就会发出去；回答边写边读。';
 
   @override

@@ -21692,6 +21692,12 @@ class L10nEn extends L10n {
   String get speechCallSection => 'Voice calls';
 
   @override
+  String get speechCallEnabled => 'Show voice call';
+
+  @override
+  String get speechCallEnabledHint => 'When off, Voice call is hidden from the main bar and the + menu';
+
+  @override
   String get speechCallFooter =>
       'In a call, pause after you speak and it is sent; the answer is read while it is written.';
 

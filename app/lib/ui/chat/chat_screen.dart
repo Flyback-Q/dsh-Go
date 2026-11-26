@@ -19,6 +19,7 @@ import '../../runtime/local_footprint.dart' show RuntimeMissing;
 import '../../runtime/runtime_bridge.dart' show RuntimePhase;
 import '../../runtime/runtime_state.dart' show localRuntimeProvider;
 import '../../speech/read_aloud.dart';
+import '../../speech/speech_settings.dart';
 import '../../speech/voice_cloud.dart';
 import '../../state/android_features.dart';
 import '../../state/account_state.dart';
@@ -1073,7 +1074,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
         files: canStageFiles(ref.read(activeConnectionProvider).value, ref.read(activeHostProvider)),
         sessionId: ref.read(currentSessionProvider),
         generate: ref.read(mediaPluginProvider) != MediaPluginState.absent,
-        call: true,
+        call: ref.read(callSettingsProvider).enabled,
       );
       if (choice is CallChoice) {
         if (ownsDraft() && mounted) await _startCall(ownsDraft);
@@ -1972,7 +1973,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                 HapticFeedback.selectionClick();
                                 ref.read(currentSessionProvider.notifier).select(null);
                               },
-                        onCall: isChild ? null : _callFromHeader,
+                        onCall: isChild || !ref.watch(callSettingsProvider.select((s) => s.enabled))
+                            ? null
+                            : _callFromHeader,
                         // The title pill opens the whole session's details (on a
                         // wide window it folds and unfolds the panel beside us).
                         onTitleTap: sessionId == null

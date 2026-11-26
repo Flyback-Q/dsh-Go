@@ -135,6 +135,7 @@ enum CallVisual { ring, mono, glass }
 
 class CallSettings {
   const CallSettings({
+    this.enabled = true,
     this.bargeIn = true,
     this.spoken = true,
     this.speaker = true,
@@ -144,6 +145,9 @@ class CallSettings {
     this.visual = CallVisual.glass,
     this.pause = CallPause.normal,
   });
+
+  /// Whether 语音通话 is shown and available in the main chat UI.
+  final bool enabled;
 
   /// Speaking over her stops her (else what is said while she talks is ignored).
   final bool bargeIn;
@@ -168,6 +172,7 @@ class CallSettings {
   final CallPause pause;
 
   CallSettings copyWith({
+    bool? enabled,
     bool? bargeIn,
     bool? spoken,
     bool? speaker,
@@ -177,6 +182,7 @@ class CallSettings {
     CallVisual? visual,
     CallPause? pause,
   }) => CallSettings(
+    enabled: enabled ?? this.enabled,
     bargeIn: bargeIn ?? this.bargeIn,
     spoken: spoken ?? this.spoken,
     speaker: speaker ?? this.speaker,
@@ -205,6 +211,7 @@ class CallSettingsController extends Notifier<CallSettings> {
       final json = raw == null ? null : jsonDecode(raw);
       if (json is! Map || !ref.mounted) return;
       state = CallSettings(
+        enabled: json['enabled'] != false,
         bargeIn: json['bargeIn'] != false,
         spoken: json['spoken'] != false,
         speaker: json['speaker'] != false,
@@ -245,6 +252,7 @@ class CallSettingsController extends Notifier<CallSettings> {
     await prefs.setString(
       _key,
       jsonEncode({
+        'enabled': next.enabled,
         'bargeIn': next.bargeIn,
         'spoken': next.spoken,
         'speaker': next.speaker,

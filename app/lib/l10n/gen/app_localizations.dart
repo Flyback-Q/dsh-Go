@@ -37716,6 +37716,18 @@ abstract class L10n {
   /// **'语音通话'**
   String get speechCallSection;
 
+  /// No description provided for @speechCallEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示语音通话'**
+  String get speechCallEnabled;
+
+  /// No description provided for @speechCallEnabledHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭后，主界面顶栏与「+」菜单不再显示语音通话入口'**
+  String get speechCallEnabledHint;
+
   /// No description provided for @speechCallFooter.
   ///
   /// In zh, this message translates to:
