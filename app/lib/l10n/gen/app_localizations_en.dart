@@ -5369,6 +5369,44 @@ class L10nEn extends L10n {
   }
 
   @override
+  String get companionPhoneConnectionReplaced =>
+      'A newer phone connection took over this session. Return to the current companion session and try again.';
+
+  @override
+  String get companionPhoneSessionUnavailable =>
+      'The host cannot find this companion session, or its preset has changed. Reopen the companion room.';
+
+  @override
+  String get companionPhoneToolsConflict =>
+      'The host could not connect the phone tools for this turn. Reopen the current companion session and try again.';
+
+  @override
+  String get companionHostSelectionChanged =>
+      'The host session selection changed. Check the current session before sending again.';
+
+  @override
+  String get companionLocalDisconnected => 'The on-device engine is disconnected. Check that it is running.';
+
+  @override
+  String get companionLocalUnavailable =>
+      'The on-device engine cannot open the companion session. Check the engine and its companion preset.';
+
+  @override
+  String get companionLocalModelUnavailable =>
+      'The on-device engine cannot use this companion’s previously selected model. Check its model settings.';
+
+  @override
+  String get companionContinuedOnPhone => 'The host has not received this message. This turn will use light mode.';
+
+  @override
+  String get companionLogOnDevice => 'On-device history';
+
+  @override
+  String companionSessionUsingTool(String tool) {
+    return 'Using $tool';
+  }
+
+  @override
   String get companionTitle => 'Companion room';
 
   @override
@@ -5443,6 +5481,10 @@ class L10nEn extends L10n {
   @override
   String get companionAgentRetryClosed =>
       'I may have already started on that, and I don\'t want to do it twice. Take a look in Tasks, then tell me whether to carry on?';
+
+  @override
+  String get companionPhoneRunStopped =>
+      'The phone work stopped partway, so I paused rather than repeat a step. Check the phone as it is now, and tell me if I should carry on.';
 
   @override
   String get companionLogTitle => 'Log';
@@ -5627,6 +5669,9 @@ class L10nEn extends L10n {
 
   @override
   String get companionShake3 => 'Keep that up and I\'ll start blowing bubbles!';
+
+  @override
+  String get companionShakeDizzy => 'My head is spinning…';
 
   @override
   String get companionStatusIdle => 'Daydreaming';
@@ -6596,20 +6641,16 @@ class L10nEn extends L10n {
   String get companionReminderSecond => 'The second one';
 
   @override
-  String get companionReminderExactMissing =>
-      'Your phone won\'t let me remind you on the dot yet, so this isn\'t set. Turn on “Alarms & reminders” in system settings.';
-
-  @override
   String get companionReminderNotificationsMissing =>
-      'Notifications are off, so this isn\'t set yet. Turn them on in system settings.';
+      'It\'s set, but notifications are off, so I can\'t reach you when it\'s time. Turn them on in system settings.';
 
   @override
   String get companionReminderChannelMissing =>
-      'Reminder notifications are turned off, so this isn\'t set yet. Turn them on in system settings.';
+      'It\'s set, but reminder notifications are turned off, so I can\'t reach you when it\'s time. Turn them on in system settings.';
 
   @override
   String get companionReminderGroupMissing =>
-      'The notification group for reminders is turned off, so this isn\'t set yet. Turn it on in system settings.';
+      'It\'s set, but the notification group for reminders is turned off, so I can\'t reach you when it\'s time. Turn it on in system settings.';
 
   @override
   String get companionReminderTimePassed => 'That time has already passed, so I didn\'t ring late.';
@@ -7640,7 +7681,7 @@ class L10nEn extends L10n {
 
   @override
   String get companionScreenHint =>
-      'She glances at the screen now and then and only speaks up when something is worth saying; nothing she sees is kept';
+      'She watches the screen with you and speaks up when something catches her eye; the screen itself is not kept, only her last few remarks';
 
   @override
   String get companionScreenNeedsAccess =>
@@ -7697,6 +7738,18 @@ class L10nEn extends L10n {
 
   @override
   String get companionScreenChattyHint => 'Talks with you more often';
+
+  @override
+  String get companionScreenLive => 'Live';
+
+  @override
+  String get companionScreenLiveHint => 'Keeps watching and can speak up several times a minute';
+
+  @override
+  String get companionScreenPerHour => 'Most lines an hour';
+
+  @override
+  String get companionScreenPerHourNone => 'No limit';
 
   @override
   String get companionScreenUsageAccess => 'Let her know which app you\'re using';
@@ -7855,6 +7908,29 @@ class L10nEn extends L10n {
 
   @override
   String get companionRawEraseGone => 'Too late this time; the original words are still here.';
+
+  @override
+  String get companionSetupWorkshop => 'Find one in the Workshop';
+
+  @override
+  String get companionRosterTitle => 'Companions';
+
+  @override
+  String get companionRosterHere => 'In the room';
+
+  @override
+  String get companionRosterAdd => 'Add a companion';
+
+  @override
+  String get companionRosterBring => 'Bring her into the room';
+
+  @override
+  String get companionRosterRemove => 'Remove from this phone';
+
+  @override
+  String companionRosterRemoveConfirm(String name) {
+    return 'Remove “$name” from this phone? Her files are deleted; memories and reminders stay.';
+  }
 
   @override
   String get automaticDiagnosticsRecover => 'Recover local records';
@@ -29941,7 +30017,7 @@ class L10nEn extends L10n {
   String get workshopTitle => 'Workshop';
 
   @override
-  String get workshopSubtitle => 'Pets and companions made by others. Install the ones you like';
+  String get workshopSubtitle => 'Themes, pets and companions made by others. Install the ones you like';
 
   @override
   String get workshopEntrySubtitle => 'Find pets and companions made by others';
@@ -30658,17 +30734,17 @@ class L10nEn extends L10n {
   String get workshopPublishCompanionCurrent => 'Your current companion';
 
   @override
-  String get workshopPublishSourcesEmptyTitle => 'Nothing to submit yet';
+  String get workshopPublishSourcesEmptyTitle => 'Nothing on this phone to submit';
 
   @override
   String get workshopPublishSourcesEmptyMessage =>
-      'Pixel pets you imported and your current companion can be submitted, or pick a file directly.';
+      'Submit a local theme, pixel pet, or companion, or pick a ZIP directly.';
 
   @override
   String get workshopPublishFromFile => 'Choose a file';
 
   @override
-  String get workshopPublishFromFileHint => 'A pet or companion zip; no need to import it first';
+  String get workshopPublishFromFileHint => 'A theme, pet, or companion ZIP; no need to import it first';
 
   @override
   String get workshopPublishTitleEnHelper => 'Optional; the Chinese name is used if empty';
@@ -30681,6 +30757,9 @@ class L10nEn extends L10n {
 
   @override
   String get workshopPublishSourcesIssue => 'Couldn\'t read what can be submitted from this phone.';
+
+  @override
+  String get workshopPublishThemesIssue => 'Couldn\'t read the theme packs on this phone.';
 
   @override
   String get workshopPublishPetsIssue => 'Couldn\'t read the pixel pets on this phone.';
